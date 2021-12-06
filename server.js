@@ -106,13 +106,13 @@ app.post("/interactions/", async (req, res) => {
       },
     });
   } catch (e) {
+    console.error(e.message);
     res.send({
       type: 4,
       data: {
         content: e.message,
       },
     });
-    console.error(e.message);
   }
 });
 

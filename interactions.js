@@ -1,9 +1,9 @@
 const express = require("express");
 const router = express.Router();
+const verificationCheck = require("./verificationCheck.js");
 
-router.post("/", (req, res) => {
-  console.log("hielooasdofsafdsfad;f a");
-  res.send("hi");
-});
+router.use(verificationCheck);
+
+router.post("/", (req, res) => {});
 
 module.exports = router;
