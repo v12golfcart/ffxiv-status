@@ -10,7 +10,7 @@ var cron = require("node-cron");
 /* ++++++++++++++++++++++++++++++++++++++++++++++ */
 /* ++++++++++++++++ CUSTOM IMPORTS ++++++++++++++++ */
 /* ++++++++++++++++++++++++++++++++++++++++++++++ */
-const { port } = require("./config");
+const { port, DISCORD_WEBHOOK_URL } = require("./config");
 const primalScrape = require("./scraper");
 
 /* ++++++++++++++++++++++++++++++++++++++++++++++ */
@@ -20,9 +20,6 @@ const primalScrape = require("./scraper");
 const check = () => {
   console.log("Starting the cron job");
   cron.schedule("*/15 * * * * *", async () => {
-    const webhookUrl =
-      "https://discord.com/api/webhooks/917217028610351165/hKgCnLc7RHLl6ikAVnAheTKqxi1PFRbgHV0fgYSH68CfmDThF1WMynyaDM_N8b1u9GYs";
-
     // get latest server status
     const status = await primalScrape();
     console.log(status);
@@ -30,7 +27,7 @@ const check = () => {
     try {
       // if error
       if (!status.name) {
-        axios.post(webhookUrl, {
+        axios.post(DISCORD_WEBHOOK_URL, {
           content:
             "<@301969677100515328>, your shitty scraper broke. get rekt.",
         });
@@ -39,7 +36,7 @@ const check = () => {
       // send a webhook if primal is open
       const behemoth = status.servers.filter((i) => i.name == "Behemoth");
       if (behemoth && behemoth.allowsNewChars) {
-        axios.post(webhookUrl, {
+        axios.post(DISCORD_WEBHOOK_URL, {
           content:
             "<@301969677100515328>, Behemoth is open for new characters! Sign up asap!",
           embeds: [

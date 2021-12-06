@@ -19,6 +19,7 @@ const environment = {
   DISCORD_CLIENT_ID,
   DISCORD_CILENT_SECRET,
   DISCORD_CLIENT_PUBLIC_KEY,
+  DISCORD_WEBHOOK_URL,
 };
 
 module.exports = environment;
