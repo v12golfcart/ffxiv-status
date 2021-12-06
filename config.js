@@ -14,7 +14,7 @@ const environment = {
   port: env === "production" ? PORT : 3000,
   env,
   // domain boiler plate
-  apiURL: env === "production" ? rootURL : `http://localhost:3000`,
+  apiURL: env === "production" ? rootURL : `http://ffxiv.ngrok.io`,
   // discord
   DISCORD_CLIENT_ID,
   DISCORD_CILENT_SECRET,

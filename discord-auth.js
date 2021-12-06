@@ -5,8 +5,6 @@ const { apiURL } = require("./config");
 
 const { DISCORD_CLIENT_ID, DISCORD_CILENT_SECRET } = process.env;
 
-let root = "http://www.jankpoll.com";
-
 function _encode(obj) {
   let string = "";
 
@@ -19,12 +17,12 @@ function _encode(obj) {
 }
 
 // auth
-const redirect = `${apiURL}/api/auth/discord/callback`;
-const scopes = ["identify", "email", "bot", "applications.commands"];
+const redirect = `${apiURL}/auth/discord/callback`;
+const scopes = ["identify", "email", "applications.commands"];
 
 router.get("/", (req, res) => {
   res.redirect(
-    `https://discord.com/api/oauth2/authorize?client_id=${DISCORD_CLIENT_ID}&permissions=379968&scope=${encodeURIComponent(
+    `https://discord.com/api/oauth2/authorize?client_id=${DISCORD_CLIENT_ID}&scope=${encodeURIComponent(
       scopes.join(" ")
     )}&response_type=code&redirect_uri=${encodeURIComponent(redirect)}`
   );

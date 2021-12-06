@@ -30,10 +30,17 @@ const primalScrape = async () => {
       const servers = $(dataCenter).children().find("div.world-list__item");
       let arr = [];
       servers.map((i) => arr.push(serverStatus(servers.get(i))));
-      return {
+      // just a test
+      // arr = arr.map((i) =>
+      //   i.name == "Behemoth" ? { ...i, allowsNewChars: true } : i
+      // );
+
+      const status = {
         name: dataCenterGroupName(dataCenter),
         servers: arr,
       };
+      console.log(status);
+      return status;
     };
 
     /* ++++++++++++++++++++++++++++++++++++++++++++++ */

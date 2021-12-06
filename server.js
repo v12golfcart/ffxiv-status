@@ -4,14 +4,27 @@
 const express = require("express");
 const app = express();
 const axios = require("axios");
-const cheerio = require("cheerio");
-var cron = require("node-cron");
+const cron = require("node-cron");
 
 /* ++++++++++++++++++++++++++++++++++++++++++++++ */
 /* ++++++++++++++++ CUSTOM IMPORTS ++++++++++++++++ */
 /* ++++++++++++++++++++++++++++++++++++++++++++++ */
-const { port, DISCORD_WEBHOOK_URL } = require("./config");
+const { port, env, DISCORD_WEBHOOK_URL } = require("./config");
 const primalScrape = require("./scraper");
+const { runVerification } = require("./verificationCheck");
+
+/* ++++++++++++++++++++++++++++++++++++++++++++++ */
+/* ++++++++++++++++ UTILITIES ++++++++++++++++ */
+/* ++++++++++++++++++++++++++++++++++++++++++++++ */
+const composeDataCenterStatusEmbed = (status) => {
+  return {
+    title: `${status.name}`,
+    description: status.servers
+      .map((i) => `${i.allowsNewChars ? "🟢" : "🔴"} ${i.name} \n`)
+      .join(""),
+    url: "https://na.finalfantasyxiv.com/lodestone/worldstatus/",
+  };
+};
 
 /* ++++++++++++++++++++++++++++++++++++++++++++++ */
 /* ++++++++++++++++ CRON JOB ++++++++++++++++ */
@@ -22,7 +35,6 @@ const check = () => {
   cron.schedule("*/15 * * * * *", async () => {
     // get latest server status
     const status = await primalScrape();
-    console.log(status);
 
     try {
       // if error
@@ -34,20 +46,12 @@ const check = () => {
       }
 
       // send a webhook if primal is open
-      const behemoth = status.servers.filter((i) => i.name == "Behemoth");
+      const behemoth = status.servers.filter((i) => i.name == "Behemoth")[0];
       if (behemoth && behemoth.allowsNewChars) {
         axios.post(DISCORD_WEBHOOK_URL, {
           content:
             "<@301969677100515328>, Behemoth is open for new characters! Sign up asap!",
-          embeds: [
-            {
-              title: "Primal Datacenter",
-              description: status.servers
-                .map((i) => `${i.allowsNewChars ? "🟢" : "🔴"} ${i.name} \n`)
-                .join(""),
-              url: "https://na.finalfantasyxiv.com/lodestone/worldstatus/",
-            },
-          ],
+          embeds: [composeDataCenterStatusEmbed(status)],
         });
       }
     } catch (e) {
@@ -59,8 +63,59 @@ const check = () => {
 check();
 
 /* ++++++++++++++++++++++++++++++++++++++++++++++ */
-/* ++++++++++++++++ SERVER ++++++++++++++++ */
+/* ++++++++++++++++ SERVER MIDDLEWARE ++++++++++++++++ */
 /* ++++++++++++++++++++++++++++++++++++++++++++++ */
+app.use(express.json());
+app.use(express.urlencoded({ extended: false }));
+app.use((req, res, next) => {
+  if (env === "development") {
+    const msg = [
+      `+++++++++++++++++++++++++++++++++++++++++++++`,
+      `${req.method}: ${req.baseUrl}${req.path}`,
+      `query:`,
+      req.query,
+      `params:`,
+      req.params,
+      `body:`,
+      req.body,
+    ];
+    console.log(msg);
+  }
+  next();
+});
+
+/* ++++++++++++++++++++++++++++++++++++++++++++++ */
+/* ++++++++++++++++ RESTFUL ENDPOINTS ++++++++++++++++ */
+/* ++++++++++++++++++++++++++++++++++++++++++++++ */
+
+app.use("/auth/discord/", require("./discord-auth"));
+
+app.post("/interactions/", async (req, res) => {
+  // verification first
+  runVerification(req, res);
+
+  try {
+    //fetch data
+    const status = await primalScrape();
+
+    // logic
+    res.send({
+      type: 4,
+      data: {
+        embeds: [composeDataCenterStatusEmbed(status)],
+      },
+    });
+  } catch (e) {
+    res.send({
+      type: 4,
+      data: {
+        content: e.message,
+      },
+    });
+    console.error(e.message);
+  }
+});
+
 app.get("/", (req, res) => {
   res.send("Hello World!!");
 });
