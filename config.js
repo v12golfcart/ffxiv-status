@@ -7,7 +7,7 @@ const {
   DISCORD_WEBHOOK_URL,
 } = process.env;
 
-const rootURL = "";
+const rootURL = "https://ffxiv-status.herokuapp.com";
 const env = NODE_ENV || "development";
 
 const environment = {
